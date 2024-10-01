@@ -1,8 +1,25 @@
+import json
+import os
+
 # Dicionário para armazenar os livros
 livros = {}
 
 # Dicionário para armazenar os empréstimos
 emprestimos = {}
+
+def carregar_livros():
+    if os.path.exists('livros.json'):
+        with open('livros.json', 'r') as file:
+            global livros
+            livros = json.load(file)
+        print("Livros carregados com sucesso.")
+    else:
+        print("Nenhum arquivo de livros encontrado. Iniciando com um acervo vazio.")
+
+def salvar_livros():
+    with open('livros.json', 'w') as file:
+        json.dump(livros, file, indent=4)
+    print("Livros salvos com sucesso.")
 
 def cadastrar_livro():
     codigo = input("Digite o código do livro: ")
@@ -78,19 +95,65 @@ def devolver_livro():
     del emprestimos[codigo]
     print(f"Livro '{livros[codigo]['titulo']}' devolvido com sucesso!")
 
+def gerar_relatorios():
+    while True:
+        print("\nSubmenu de Relatórios:")
+        print("1. Listar todos os livros")
+        print("2. Listar livros disponíveis")
+        print("3. Listar livros emprestados")
+        print("4. Voltar ao menu principal")
+        
+        opcao = input("Escolha uma opção: ")
+        
+        if opcao == '1':
+            listar_todos_os_livros()
+        elif opcao == '2':
+            listar_livros_disponiveis()
+        elif opcao == '3':
+            listar_livros_emprestados()
+        elif opcao == '4':
+            break
+        else:
+            print("Opção inválida. Tente novamente.")
+
+def listar_todos_os_livros():
+    print("\nTodos os livros:")
+    for codigo, livro in livros.items():
+        print(f" - Código: {codigo}, Título: {livro['titulo']}, Autor: {livro['autor']}, ISBN: {livro['isbn']}, Editora: {livro['editora']}, Status: {livro['status']}")
+
+def listar_livros_disponiveis():
+    print("\nLivros disponíveis:")
+    disponiveis = [livro for livro in livros.values() if livro['status'] == 'disponível']
+    if not disponiveis:
+        print("Nenhum livro disponível no momento.")
+        return
+    for livro in disponiveis:
+        print(f" - Título: {livro['titulo']}, Autor: {livro['autor']}, ISBN: {livro['isbn']}, Editora: {livro['editora']}")
+
+def listar_livros_emprestados():
+    print("\nLivros emprestados:")
+    emprestados = [codigo for codigo, usuario in emprestimos.items()]
+    if not emprestados:
+        print("Nenhum livro emprestado no momento.")
+        return
+    for codigo in emprestados:
+        livro = livros[codigo]
+        print(f" - Título: {livro['titulo']}, Autor: {livro['autor']}, ISBN: {livro['isbn']}, Editora: {livro['editora']}")
+
 def main_menu():
     print("Bem-vindo ao BiblioTEI!")
     print("1. Cadastrar Livro")
     print("2. Consultar Livro")
     print("3. Emprestar Livro")
     print("4. Devolver Livro")
-    print("5. Gerar Relatórios")
+    print("5. Relatórios")
     print("6. Sair")
 
     option = input("Escolha uma opção: ")
     return option
 
 if __name__ == "__main__":
+    carregar_livros()  # Carrega os livros ao iniciar
     while True:
         option = main_menu()
         if option == '1':
@@ -101,7 +164,10 @@ if __name__ == "__main__":
             emprestar_livro()
         elif option == '4':
             devolver_livro()
+        elif option == '5':
+            gerar_relatorios()
         elif option == '6':
+            salvar_livros()  # Salva os livros ao sair
             print("Saindo do sistema. Até logo!")
             break
         else:
